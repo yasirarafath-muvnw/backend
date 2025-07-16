@@ -43,7 +43,7 @@ app.get("/career", (req, res) => {
   res.send("Careers");
 });
 
-app.post('/api/user', async (req, res) => {
+app.post('/api/user', authenticateToken, async (req, res) => {
   try {
     const { firstName, lastName, email, name, age, gender, comments } = req.body;
 
@@ -64,9 +64,9 @@ app.post('/api/user', async (req, res) => {
     res.status(500).send('Error posting User');
     console.log('error', error);
   }
-})
+});
 
-app.put('/api/user/:id', async (req, res) => {
+app.put('/api/user/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -83,14 +83,13 @@ app.put('/api/user/:id', async (req, res) => {
 
     res.status(200).json(updatedUser);
 
-
   } catch (error) {
     res.status(500).send('Error updating User');
     console.log('error', error);
   }
-})
+});
 
-app.delete('/api/user/:id', async (req, res) => {
+app.delete('/api/user/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -108,10 +107,9 @@ app.delete('/api/user/:id', async (req, res) => {
   }
 });
 
-app.get('/api/user/:id', async (req, res) => {
+app.get('/api/user/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-
 
     const isUserFound = await Profile.findById(id);
 
@@ -125,9 +123,9 @@ app.get('/api/user/:id', async (req, res) => {
     res.status(500).send({ message: 'Error finding User' });
     console.log('error', error);
   }
-})
+});
 
-app.post('/api/user/upload', upload.single('file'), function (req, res, next) {
+app.post('/api/user/upload', authenticateToken, upload.single('file'), function (req, res, next) {
   try {
     console.log('File uploaded:', req.file);
     res.status(201).send('Upload Successful')
@@ -135,7 +133,7 @@ app.post('/api/user/upload', upload.single('file'), function (req, res, next) {
     res.status(500).json({ message: 'Error Uploading Picture' })
     console.log('error', error);
   }
-})
+});
 
 app.post('/api/auth/signup', async (req, res) => {
   try {

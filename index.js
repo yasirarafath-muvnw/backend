@@ -3,6 +3,8 @@ import connectDB from "./connection/db.js";
 
 import Profile from './models/Profile/index.js'
 import User from "./models/User/index.js";
+import Task from "./models/Task/index.js";
+
 import { authenticateToken } from "./middleware/auth.js";
 
 import multer from "multer";
@@ -193,3 +195,37 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/tasks', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId; // Automatically extracted from token
+
+    const task = new Task({ title, description, user: userId });
+    await task.save();
+
+    res.status(201).json(task);
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating task', error: err.message });
+  }
+});
+
+app.get('/api/tasks', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const tasks = await Task.find({ user: userId });
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching tasks', error: err.message });
+  }
+});
+
+app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
+  try {
+    const task = await Task.findOne({ _id: req.params.id, user: req.user.userId });
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    res.status(200).json(task);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching task', error: err.message });
+  }
+});

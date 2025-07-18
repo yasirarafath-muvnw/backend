@@ -265,3 +265,31 @@ app.get('/api/tasks/user/:userId', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Error fetching user tasks', error: err.message });
   }
 });
+
+app.put("/api/tasks/:id", authenticateToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const userId = req.user.userId;
+
+    const validStatuses = ["pending", "in-progress", "completed"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: req.params.id, createdBy: userId },
+      { status },
+      { new: true }
+    ).populate("assignedTo", "username email");
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found or unauthorized" });
+    }
+
+    res.status(200).json(updatedTask);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating task", error: err.message });
+  }
+});
+
+// ---------

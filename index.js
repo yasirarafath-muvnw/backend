@@ -45,6 +45,7 @@ app.get("/career", (req, res) => {
   res.send("Careers");
 });
 
+// ---------
 app.post('/api/user', authenticateToken, async (req, res) => {
   try {
     const { firstName, lastName, email, name, age, gender, comments } = req.body;
@@ -137,6 +138,7 @@ app.post('/api/user/upload', authenticateToken, upload.single('file'), function 
   }
 });
 
+// ---------
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -195,37 +197,71 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/tasks', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId; // Automatically extracted from token
-
-    const task = new Task({ title, description, user: userId });
-    await task.save();
-
-    res.status(201).json(task);
-  } catch (err) {
-    res.status(500).json({ message: 'Error creating task', error: err.message });
-  }
-});
-
-app.get('/api/tasks', authenticateToken, async (req, res) => {
+// ---------
+app.post("/api/tasks", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
+    const { title, description, assignedTo } = req.body;
 
-    const tasks = await Task.find({ user: userId });
-    res.status(200).json(tasks);
+    const task = new Task({
+      title,
+      description,
+      createdBy: userId,
+      assignedTo: assignedTo || null,
+    });
+
+    await task.save();
+    res.status(201).json(task);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching tasks', error: err.message });
+    res.status(500).json({ message: "Error creating task", error: err.message });
   }
 });
 
-app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
+app.get("/api/tasks", authenticateToken, async (req, res) => {
   try {
-    const task = await Task.findOne({ _id: req.params.id, user: req.user.userId });
-    if (!task) return res.status(404).json({ message: 'Task not found' });
+    const userId = req.user.userId;
+    const tasks = await Task.find({ createdBy: userId }).populate("assignedTo", "username email");
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching tasks", error: err.message });
+  }
+});
+
+app.get("/api/tasks/:id", authenticateToken, async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      createdBy: req.user.userId,
+    }).populate("assignedTo", "username email");
+
+    if (!task) return res.status(404).json({ message: "Task not found" });
 
     res.status(200).json(task);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching task', error: err.message });
+    res.status(500).json({ message: "Error fetching task", error: err.message });
+  }
+});
+
+app.delete("/api/tasks/:id", authenticateToken, async (req, res) => {
+  try {
+    const deletedTask = await Task.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.user.userId,
+    });
+
+    if (!deletedTask) return res.status(404).json({ message: "Task not found or unauthorized" });
+
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting task", error: err.message });
+  }
+});
+
+app.get('/api/tasks/user/:userId', authenticateToken, async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.params.userId });
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user tasks', error: err.message });
   }
 });

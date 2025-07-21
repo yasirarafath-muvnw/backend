@@ -4,17 +4,23 @@ import connectDB from "./connection/db.js";
 import Profile from './models/Profile/index.js'
 import User from "./models/User/index.js";
 import Task from "./models/Task/index.js";
+import Project from "./models/Project/index.js";
 
 import { authenticateToken } from "./middleware/auth.js";
 
 import multer from "multer";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import helmet from "helmet";
 
 const jwtSecret = "00000000";
 
 const saltRounds = 10;
 
+dotenv.config();
 const app = express();
 
 const storage = multer.diskStorage({
@@ -28,6 +34,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 app.use(express.json());
+app.use(cors());
+app.use(morgan('dev'));
 
 connectDB();
 
@@ -45,7 +53,7 @@ app.get("/career", (req, res) => {
   res.send("Careers");
 });
 
-// ---------
+// ---------------------------------------------------------------
 app.post('/api/user', authenticateToken, async (req, res) => {
   try {
     const { firstName, lastName, email, name, age, gender, comments } = req.body;
@@ -138,7 +146,7 @@ app.post('/api/user/upload', authenticateToken, upload.single('file'), function 
   }
 });
 
-// ---------
+// ---------------------------------------------------------------
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -197,7 +205,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// ---------
+// ---------------------------------------------------------------
 app.post("/api/tasks", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -292,4 +300,117 @@ app.put("/api/tasks/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// ---------
+// ---------------------------------------------------------------
+app.post("/api/projects", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      name,
+      description,
+      status,
+      priority,
+      startDate,
+      endDate,
+      members,
+      tags,
+    } = req.body;
+
+    const project = new Project({
+      name,
+      description,
+      status,
+      priority,
+      startDate,
+      endDate,
+      createdBy: userId,
+      members,
+      tags,
+    });
+
+    await project.save();
+    res.status(201).json(project);
+  } catch (err) {
+    res.status(500).json({ message: "Error creating project", error: err.message });
+  }
+});
+
+app.get("/api/projects", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const projects = await Project.find({ createdBy: userId })
+      .populate("createdBy", "username email")
+      .populate("members", "username email");
+
+    res.status(200).json(projects);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching projects", error: err.message });
+  }
+});
+
+app.get("/api/projects/:id", authenticateToken, async (req, res) => {
+  try {
+    const project = await Project.findOne({
+      _id: req.params.id,
+      createdBy: req.user.userId,
+    })
+      .populate("createdBy", "username email")
+      .populate("members", "username email");
+
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    res.status(200).json(project);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching project", error: err.message });
+  }
+});
+
+app.delete("/api/projects/:id", authenticateToken, async (req, res) => {
+  try {
+    const deletedProject = await Project.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.user.userId,
+    });
+
+    if (!deletedProject)
+      return res.status(404).json({ message: "Project not found or unauthorized" });
+
+    res.status(200).json({ message: "Project deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting project", error: err.message });
+  }
+});
+
+app.put("/api/projects/:id", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const updateFields = req.body;
+
+    const project = await Project.findOneAndUpdate(
+      { _id: req.params.id, createdBy: userId },
+      updateFields,
+      { new: true }
+    )
+      .populate("createdBy", "username email")
+      .populate("members", "username email");
+
+    if (!project)
+      return res.status(404).json({ message: "Project not found or unauthorized" });
+
+    res.status(200).json(project);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating project", error: err.message });
+  }
+});
+
+app.get("/api/projects/user/:userId", authenticateToken, async (req, res) => {
+  try {
+    const projects = await Project.find({ members: req.params.userId })
+      .populate("createdBy", "username email")
+      .populate("members", "username email");
+
+    res.status(200).json(projects);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching user projects", error: err.message });
+  }
+});

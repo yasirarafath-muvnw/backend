@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { TASK_STATUS } from "../types/task/index.js";
 
 const taskSchema = new mongoose.Schema(
   {
@@ -6,7 +7,7 @@ const taskSchema = new mongoose.Schema(
     description: { type: String },
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed"],
+      enum: TASK_STATUS,
       default: "pending",
     },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -17,3 +18,6 @@ const taskSchema = new mongoose.Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 export default Task;
+
+// dueDate: Date,
+// priority: { type: String, enum: ["low", "medium", "high"], default: "medium" }

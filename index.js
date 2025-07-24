@@ -56,12 +56,19 @@ app.get("/career", (req, res) => {
 // ---------------------------------------------------------------
 app.post('/api/user', authenticateToken, async (req, res) => {
   try {
-    const { firstName, lastName, email, name, age, gender, comments } = req.body;
+    const userId = req.user.userId; // from JWT token
+    const { firstName, lastName, name, age, gender, comments } = req.body;
+
+    const existingProfile = await Profile.findOne({ user: userId });
+    if (existingProfile) {
+      return res.status(400).json({ message: 'Profile already exists for this user' });
+    }
 
     const newProfile = new Profile({
+      user: userId,
       firstName,
       lastName,
-      email,
+      email: req.user.email,
       name,
       age,
       gender,
@@ -165,7 +172,25 @@ app.post('/api/auth/signup', async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
+
+    const signUpPayload = {
+      userId: newUser._id,
+      email: newUser.email,
+    };
+
+    const accessToken = jwt.sign(signUpPayload, jwtSecret, {
+      expiresIn: '1h',
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      accessToken,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+      },
+    });
 
   } catch (err) {
     console.error('Signup failed error:', err);

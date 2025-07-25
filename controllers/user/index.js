@@ -1,4 +1,8 @@
 import Profile from '../../models/Profile/index.js';
+import multer from "multer";
+
+
+
 
 export const createUserProfile = async (req, res) => {
   try {
@@ -87,10 +91,14 @@ export const getUserProfile = async (req, res) => {
 
 export const uploadUserFile = (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
     console.log('File uploaded:', req.file);
     res.status(201).send('Upload Successful');
   } catch (error) {
-    res.status(500).json({ message: 'Error Uploading Picture' });
     console.log('error', error);
+    res.status(500).json({ message: 'Error Uploading Picture' });
   }
 };

@@ -29,16 +29,12 @@ dotenv.config();
 const app = express();
 
 setupSwagger(app);
-
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-})
-const upload = multer({ storage: storage })
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => cb(null, file.originalname),
+});
+const upload = multer({ storage });
+
 
 app.use(express.json());
 app.use(cors());
@@ -68,7 +64,7 @@ app.delete('/api/user/:id', authenticateToken, deleteUserProfile);
 
 app.get('/api/user/:id', authenticateToken, getUserProfile);
 
-app.post('/api/user/upload', authenticateToken, uploadUserFile);
+app.post('/api/user/upload', authenticateToken, upload.single('file'), uploadUserFile);
 
 
 app.post('/api/auth/signup', signup);

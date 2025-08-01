@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../../models/User/index.js';
 
+const jwtSecret = '00000000';
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;

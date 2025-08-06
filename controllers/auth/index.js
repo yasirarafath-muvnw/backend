@@ -5,15 +5,25 @@ import User from '../../models/User/index.js';
 const jwtSecret = '00000000';
 
 export const signup = async (req, res) => {
-  const { name, email, password } = req.body;
-
-  const existingUser = await User.findOne({ email });
-
-  if (existingUser) {
-    return res.json({ success: false, message: 'User already exists' });
-  }
-
   try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required',
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'User already exists',
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -24,18 +34,18 @@ export const signup = async (req, res) => {
 
     await newUser.save();
 
-    const signUpPayload = {
+    const tokenPayload = {
       userId: newUser._id,
       email: newUser.email,
     };
 
-    const accessToken = jwt.sign(signUpPayload, jwtSecret, {
+    const accessToken = jwt.sign(tokenPayload, jwtSecret, {
       expiresIn: '1h',
     });
 
-    res.status(201).json({
-      message: 'User registered successfully',
+    return res.status(201).json({
       success: true,
+      message: 'User registered successfully',
       accessToken,
       user: {
         id: newUser._id,
@@ -45,9 +55,11 @@ export const signup = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Signup failed error:', err);
-
-    res.json({ success: false, error: err.message });
+    console.error('Signup failed:', err.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
 

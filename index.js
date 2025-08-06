@@ -38,7 +38,7 @@ const upload = multer({ storage });
 
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:4000",
   credentials: true,
 }));
 
@@ -46,7 +46,7 @@ app.use(morgan('dev'));
 
 connectDB();
 
-app.listen(5000, () => console.log("listening at port 5000"));
+app.listen(3000, () => console.log("listening at port 3000"));
 
 app.get("/", (req, res) => {
   res.send("Hellow Meo");
@@ -69,6 +69,8 @@ app.delete('/api/user/:id', authenticateToken, deleteUserProfile);
 app.get('/api/user/:id', authenticateToken, getUserProfile);
 
 app.post('/api/user/upload', authenticateToken, upload.single('file'), uploadUserFile);
+
+// app.use('/uploads', express.static('uploads'));
 
 
 app.post('/api/auth/signup', signup);

@@ -11,7 +11,7 @@ import { setupSwagger } from "./swagger.js";
 import { login, signup } from "./controllers/auth/index.js";
 import { createTask, deleteTaskById, getAllTasks, getTaskById, getTasksByUser, updateTaskStatus } from "./controllers/task/index.js";
 import { createProject, deleteProjectById, getAllProjects, getProjectById, getProjectsByUser, updateProject } from "./controllers/project/index.js";
-import { createUserProfile, deleteUserProfile, getUserProfile, updateUserProfile, uploadUserFile } from "./controllers/user/index.js";
+import { createUserProfile, deleteUserProfile, getUserProfile, updateUserProfile, uploadUserFile } from "./controllers/userProfile/index.js";
 
 import multer from "multer";
 import bcrypt from "bcrypt";
@@ -20,6 +20,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import helmet from "helmet";
+import { getAllUsers } from "./controllers/user/index.js";
 
 const jwtSecret = "00000000";
 
@@ -76,6 +77,9 @@ app.post('/api/user/upload', authenticateToken, upload.single('file'), uploadUse
 app.post('/api/auth/signup', signup);
 
 app.post('/api/auth/login', login);
+
+
+app.get('/api/users', authenticateToken, getAllUsers);
 
 
 app.post("/api/tasks", authenticateToken, createTask);

@@ -45,13 +45,6 @@ const projectSchema = new mongoose.Schema({
     },
   ],
 
-  tags: [
-    {
-      type: String,
-      trim: true,
-    },
-  ],
-
   isArchived: {
     type: Boolean,
     default: false,

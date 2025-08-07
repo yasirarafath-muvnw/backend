@@ -1,6 +1,11 @@
 import Project from '../../models/Project/index.js';
 
 export const createProject = async (req, res) => {
+
+  console.log('Authenticated user:', req.user);
+
+  console.log('AUTH HEADER:', req.headers.authorization);
+
   try {
     const userId = req.user.userId;
     const {
@@ -11,7 +16,6 @@ export const createProject = async (req, res) => {
       startDate,
       endDate,
       members,
-      tags,
     } = req.body;
 
     const project = new Project({
@@ -23,12 +27,15 @@ export const createProject = async (req, res) => {
       endDate,
       createdBy: userId,
       members,
-      tags,
     });
 
     await project.save();
     res.status(201).json(project);
   } catch (err) {
+
+    console.error("❌ Error in createProject:", err);
+
+
     res.status(500).json({ message: "Error creating project", error: err.message });
   }
 };

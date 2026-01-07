@@ -22,12 +22,13 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import helmet from "helmet";
 
-const jwtSecret = "00000000";
-
-const saltRounds = 10;
-
 dotenv.config();
 const app = express();
+
+app.use(helmet());
+
+const jwtSecret = process.env.JWT_SECRET;
+const saltRounds = 10;
 
 setupSwagger(app);
 const storage = multer.diskStorage({
@@ -39,7 +40,7 @@ const upload = multer({ storage });
 
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:4000",
+  origin: process.env.BASE_URL || "http://localhost:4000",
   credentials: true,
 }));
 
@@ -54,7 +55,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/about", (req, res) => {
-  res.send("Hellow About Meo");
+  res.send("I Show Speed");
 });
 
 app.get("/career", (req, res) => {

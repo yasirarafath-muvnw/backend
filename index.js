@@ -39,12 +39,13 @@ const upload = multer({ storage });
 
 
 app.use(express.json());
-app.use(cors({
-  origin: "https://pomni-client.onrender.com", // process.env.BASE_URL || "http://localhost:4000"
-  // credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+// app.use(cors({
+//   origin: "https://pomni-client.onrender.com", // process.env.BASE_URL || "http://localhost:4000"
+//   // credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+// }));
+app.use(cors({}));
 
 app.use(morgan('dev'));
 

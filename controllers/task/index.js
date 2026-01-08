@@ -24,7 +24,7 @@ export const getAllTasks = async (req, res) => {
     const userId = req.user.userId;
     // const tasks = await Task.find({ createdBy: userId }).populate("assignedTo", "username email");
 
-    const tasks = await Task.find({});
+    const tasks = (await Task.find({}).sort({ createdAt: -1 }));
     res.status(200).json(tasks);
   } catch (err) {
     res.status(500).json({ message: "Error fetching tasks", error: err.message });

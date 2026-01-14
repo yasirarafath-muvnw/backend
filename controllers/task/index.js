@@ -77,7 +77,6 @@ export const deleteTaskById = async (req, res) => {
   try {
     const deletedTask = await Task.findOneAndDelete({
       _id: req.params.id,
-      project: req.query.projectId,
       createdBy: req.user.userId,
     });
 
@@ -111,13 +110,18 @@ export const updateTaskStatus = async (req, res) => {
     const { status } = req.body;
     const userId = req.user.userId;
 
-    const validStatuses = ["pending", "in-progress", "completed"];
-    if (!TASK_STATUS.includes(status)) { // enum source of truth
+    if (!TASK_STATUS.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: req.params.id, project: req.query.projectId, createdBy: userId },
+      {
+        _id: req.params.id,
+        $or: [
+          { createdBy: userId },
+          { assignedTo: userId }
+        ]
+      },
       { status },
       { new: true }
     )
@@ -134,3 +138,4 @@ export const updateTaskStatus = async (req, res) => {
     res.status(500).json({ message: "Error updating task", error: err.message });
   }
 };
+

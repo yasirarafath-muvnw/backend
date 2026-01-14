@@ -51,7 +51,7 @@ app.use(morgan('dev'));
 
 connectDB();
 
-app.listen(3000, () => console.log("listening at port 3000"));
+app.listen(5000, () => console.log("listening at port 5000"));
 
 app.get("/", (req, res) => {
   res.send("Hellow Meo");

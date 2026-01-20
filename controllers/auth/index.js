@@ -25,11 +25,12 @@ export const signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    const isFirstUser = (await User.countDocuments({})) === 0; 
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
+      role: isFirstUser ? "SUPER_ADMIN" : "USER",
     });
 
     await newUser.save();
@@ -37,6 +38,7 @@ export const signup = async (req, res) => {
     const tokenPayload = {
       userId: newUser._id,
       email: newUser.email,
+      role: newUser.role,
     };
 
     const accessToken = jwt.sign(tokenPayload, jwtSecret, {
@@ -51,6 +53,7 @@ export const signup = async (req, res) => {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        role: newUser.role,
       },
     });
 
@@ -78,7 +81,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email, role: user.role },
       jwtSecret,
       { expiresIn: '1h' }
     );
@@ -86,7 +89,7 @@ export const login = async (req, res) => {
     res.status(200).json({
       message: 'Login successful',
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
 
   } catch (err) {

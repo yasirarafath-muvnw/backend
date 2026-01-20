@@ -7,6 +7,14 @@ export const createTask = async (req, res) => {
     const userId = req.user.userId;
     const { title, description, assignedTo, project } = req.body;
 
+    if (
+      req.user.role === "USER" &&
+      assignedTo &&
+      assignedTo.toString() !== userId
+    ) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
     const projectExists = await Project.findById(project);
     if (!projectExists) {
       return res.status(400).json({ message: "Invalid project ID" });

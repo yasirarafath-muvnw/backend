@@ -6,7 +6,7 @@ import User from "./models/User/index.js";
 import Task from "./models/Task/index.js";
 import Project from "./models/Project/index.js";
 
-import { authenticateToken } from "./middleware/auth.js";
+import { authenticateToken, authorizeRoles } from "./middleware/auth.js";
 import { setupSwagger } from "./swagger.js";
 import { login, signup } from "./controllers/auth/index.js";
 import { getAllUsers } from "./controllers/user/index.js";
@@ -86,27 +86,27 @@ app.post('/api/auth/login', login);
 app.get('/api/users', authenticateToken, getAllUsers);
 
 
-app.post("/api/tasks", authenticateToken, createTask);
+app.post("/api/tasks", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN"), createTask);
 
-app.get("/api/tasks", authenticateToken, getAllTasks);
+app.get("/api/tasks", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getAllTasks);
 
-app.get("/api/tasks/:id", authenticateToken, getTaskById);
+app.get("/api/tasks/:id", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getTaskById);
 
-app.delete("/api/tasks/:id", authenticateToken, deleteTaskById);
+app.delete("/api/tasks/:id", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN"), deleteTaskById);
 
-app.get('/api/tasks/user/:userId', authenticateToken, getTasksByUser);
+app.get("/api/tasks/user/:userId", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getTasksByUser);
 
-app.put("/api/tasks/:id", authenticateToken, updateTaskStatus);
+app.put("/api/tasks/:id", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), updateTaskStatus);
 
 
-app.post("/api/projects", authenticateToken, createProject);
+app.post("/api/projects", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN"), createProject);
 
-app.get("/api/projects", authenticateToken, getAllProjects);
+app.get("/api/projects", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getAllProjects);
 
-app.get("/api/projects/:id", authenticateToken, getProjectById);
+app.get("/api/projects/:id", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getProjectById);
 
-app.delete("/api/projects/:id", authenticateToken, deleteProjectById);
+app.delete("/api/projects/:id", authenticateToken, authorizeRoles("SUPER_ADMIN"), deleteProjectById);
 
-app.put("/api/projects/:id", authenticateToken, updateProject);
+app.put("/api/projects/:id", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN"), updateProject);
 
-app.get("/api/projects/user/:userId", authenticateToken, getProjectsByUser);
+app.get("/api/projects/user/:userId", authenticateToken, authorizeRoles("SUPER_ADMIN", "ADMIN", "USER"), getProjectsByUser);

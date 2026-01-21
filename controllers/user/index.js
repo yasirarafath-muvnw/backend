@@ -1,5 +1,5 @@
 import User from "../../models/User/index.js";
-
+// import redis from "../../config/redis.js";
 
 export const getAllUsers = async (req, res) => {
   try {

@@ -1,0 +1,41 @@
+Phase 1 (You are HERE)
+
+Auth
+
+Projects
+
+Tasks
+
+Roles
+
+Phase 2 (Next 1–2 months)
+
+Issues
+
+Comments
+
+Audit logs
+
+Notifications
+
+Org ID
+
+Phase 3
+
+Orgs / workspaces
+
+Permissions
+
+Soft deletes
+
+Activity feeds
+
+Phase 4
+
+Real-time updates
+
+Redis caching
+
+Background jobs
+
+Analytics
